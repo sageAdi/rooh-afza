@@ -14,7 +14,6 @@ const etherToOthers = {
   tether: -12,
 };
 
-
 /**
  * Converts a value from a specified unit to Ether.
  * @param value - The value to be converted.
@@ -35,7 +34,7 @@ const getInEther = (value: string, from: string): Decimal => {
 };
 
 const conversions = (value: string, from: string) => {
-  if(!value || !from) throw new Error('Invalid value or from');
+  if (!value || !from) throw new Error('Invalid value or from');
 
   const inEther = getInEther(value, from);
   return Object.entries(etherToOthers).map(([key, value]) => {
@@ -44,7 +43,7 @@ const conversions = (value: string, from: string) => {
       key: key,
       value: conversion.toFixed(),
     };
-  })
+  });
 };
 
 const web3 = {
