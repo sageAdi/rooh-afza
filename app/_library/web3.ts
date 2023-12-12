@@ -37,16 +37,29 @@ const conversions = (value: string, from: string) => {
   if (!value || !from) throw new Error('Invalid value or from');
 
   const inEther = getInEther(value, from);
+  const result = {};
   return Object.entries(etherToOthers).map(([key, value]) => {
     const conversion = inEther.mul(new Decimal(10).pow(value));
     return {
-      key: key,
-      value: conversion.toFixed(),
+      [`${key}`]: conversion.toFixed(),
     };
   });
+};
+const conversion = (value: string, from: string) => {
+  if (!value || !from) throw new Error('Invalid value or from');
+
+  const inEther = getInEther(value, from);
+  const result: any = {};
+  Object.entries(etherToOthers).forEach(([key, value]) => {
+    const conversion = inEther.mul(new Decimal(10).pow(value));
+    result[`${key}`] = conversion.toFixed();
+  });
+
+  return result;
 };
 
 const web3 = {
   conversions,
+  conversion,
 };
 export default web3;

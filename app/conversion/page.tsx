@@ -1,26 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState } from 'react';
 import InputFieldDefault from '@/app/_components/InputField/InputField';
-import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
-import { Button, Stack } from '@mui/material';
 import web3 from '@/app/_library/web3';
+import { FormValues } from '../_types/formValue';
+import Stack from '@mui/material/Stack';
+import Paper from '@mui/material/Paper';
+import { Typography } from '@mui/material';
 
-type Form = {
-  Wei: string;
-  KWei: string;
-  MWei: string;
-  GWei: string;
-  Szabo: string;
-  Finney: string;
-  Ether: string;
-  KEther: string;
-  MEther: string;
-  GEther: string;
-  TEther: string;
-};
-
-const initialValues = {
+const initialValues: FormValues = {
   wei: '1000000000000000000',
   kwei: '1000000000000000',
   mwei: '1000000000000',
@@ -35,42 +23,37 @@ const initialValues = {
 };
 
 const Conversion = () => {
-  const { register, handleSubmit, reset, control, setValue } = useForm();
+  const [formValue, setFormValue] = useState<FormValues>(initialValues);
 
-  useEffect(() => {
-    Object.entries(initialValues).forEach(([name, value]) => {
-      setValue(name, value);
-    });
-  }, [setValue]);
-
-  const submit = (data: FieldValues) => {
-    const _data = web3.conversions(data['ether'], 'ether');
-    Object.entries(_data).forEach((element) => {
-      setValue(element[1]?.key, element[1]?.value);
-    });
+  const handleOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, name } = event.target;
+    if (value.length > 0) {
+      const _data = web3.conversion(value, name);
+      setFormValue(_data);
+    } else {
+      setFormValue((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit(submit)}>
-        <Stack spacing={1} width={'50%'}>
-          <InputFieldDefault name={'wei'} control={control} label={'Wei'} />
-          <InputFieldDefault name={'kwei'} control={control} label={'KWei'} />
-          <InputFieldDefault name={'mwei'} control={control} label={'MWei'} />
-          <InputFieldDefault name={'gwei'} control={control} label={'GWei'} />
-          <InputFieldDefault name={'szabo'} control={control} label={'Szabo'} />
-          <InputFieldDefault name={'finney'} control={control} label={'Finney'} />
-          <InputFieldDefault name={'ether'} control={control} label={'Ether'} />
-          <InputFieldDefault name={'kether'} control={control} label={'KEther'} />
-          <InputFieldDefault name={'mether'} control={control} label={'MEther'} />
-          <InputFieldDefault name={'gether'} control={control} label={'GEther'} />
-          <InputFieldDefault name={'tether'} control={control} label={'TEther'} />
-          <Button variant={'contained'} type={'submit'}>
-            Submit
-          </Button>
-        </Stack>
-      </form>
-    </div>
+    <Paper sx={{ p: 2, m: 2 }}>
+      <Typography variant="h5" mb={2}>
+        Conversion
+      </Typography>
+      <Stack spacing={1} maxWidth={'600px'} width={'100%'}>
+        <InputFieldDefault name={'wei'} onChange={handleOnChange} label={'Wei'} value={formValue.wei} />
+        <InputFieldDefault name={'kwei'} onChange={handleOnChange} label={'KWei'} value={formValue.kwei} />
+        <InputFieldDefault name={'mwei'} onChange={handleOnChange} label={'MWei'} value={formValue.mwei} />
+        <InputFieldDefault name={'gwei'} onChange={handleOnChange} label={'GWei'} value={formValue.gwei} />
+        <InputFieldDefault name={'szabo'} onChange={handleOnChange} label={'Szabo'} value={formValue.szabo} />
+        <InputFieldDefault name={'finney'} onChange={handleOnChange} label={'Finney'} value={formValue.finney} />
+        <InputFieldDefault name={'ether'} onChange={handleOnChange} label={'Ether'} value={formValue.ether} />
+        <InputFieldDefault name={'kether'} onChange={handleOnChange} label={'KEther'} value={formValue.kether} />
+        <InputFieldDefault name={'mether'} onChange={handleOnChange} label={'MEther'} value={formValue.mether} />
+        <InputFieldDefault name={'gether'} onChange={handleOnChange} label={'GEther'} value={formValue.gether} />
+        <InputFieldDefault name={'tether'} onChange={handleOnChange} label={'TEther'} value={formValue.tether} />
+      </Stack>
+    </Paper>
   );
 };
 export default Conversion;

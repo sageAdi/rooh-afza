@@ -25,7 +25,9 @@ import TokenIcon from '@mui/icons-material/Token';
 import ExploreIcon from '@mui/icons-material/Explore';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import Tooltip from '@mui/material/Tooltip';
+import { usePathname } from 'next/navigation';
 
 const drawerWidth = 240;
 
@@ -123,6 +125,7 @@ const IconWithTooltip = ({ icon, open, label }: { icon: any; open: boolean; labe
 };
 
 export default function Sidebar({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
   const navItems = [
@@ -135,6 +138,11 @@ export default function Sidebar({ children }: { children: ReactNode }) {
       label: 'Token',
       path: '/token',
       icon: <TokenIcon />,
+    },
+    {
+      label: 'Swap',
+      path: '/swap',
+      icon: <SwapHorizIcon />,
     },
     {
       label: 'NFT',
@@ -191,26 +199,35 @@ export default function Sidebar({ children }: { children: ReactNode }) {
         </DrawerHeader>
         <Divider />
         <List>
-          {navItems.map((item) => (
-            <ListItem key={item.path} disablePadding sx={{ display: 'block' }}>
-              <ListItemButton
+          {navItems.map((item) => {
+            return (
+              <ListItem
+                key={item.path}
+                disablePadding
                 sx={{
-                  minHeight: 48,
-                  justifyContent: open ? 'initial' : 'center',
-                  px: 2.5,
+                  display: 'block',
+                  backgroundColor: pathname.includes(item.path) ? 'primary.main' : '#fff',
+                  color: pathname.includes(item.path) ? '#fff' : '#000',
                 }}
-                component={Link}
-                href={item.path}
               >
-                <IconWithTooltip icon={item.icon} open={open} label={item.label} />
-                <ListItemText primary={item.label} sx={{ opacity: open ? 1 : 0 }} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+                <ListItemButton
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: open ? 'initial' : 'center',
+                    px: 2.5,
+                  }}
+                  component={Link}
+                  href={item.path}
+                >
+                  <IconWithTooltip icon={item.icon} open={open} label={item.label} />
+                  <ListItemText primary={item.label} sx={{ opacity: open ? 1 : 0 }} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
         </List>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}>
-        {' '}
+      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default' }}>
         <DrawerHeader />
         {children}
       </Box>
