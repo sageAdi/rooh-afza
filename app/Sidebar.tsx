@@ -19,7 +19,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Link from 'next/link';
-import { ListItemText } from '@mui/material';
+import { Button, ListItemText } from '@mui/material';
 import ArchitectureIcon from '@mui/icons-material/Architecture';
 import TokenIcon from '@mui/icons-material/Token';
 import ExploreIcon from '@mui/icons-material/Explore';
@@ -28,6 +28,8 @@ import AcUnitIcon from '@mui/icons-material/AcUnit';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import Tooltip from '@mui/material/Tooltip';
 import { usePathname } from 'next/navigation';
+import { useWeb3Modal } from '@web3modal/wagmi/react';
+import { useAccount } from 'wagmi';
 
 const drawerWidth = 240;
 
@@ -127,6 +129,16 @@ const IconWithTooltip = ({ icon, open, label }: { icon: any; open: boolean; labe
 export default function Sidebar({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const theme = useTheme();
+  const { open: openWalletModal } = useWeb3Modal();
+  const { address, isConnected } = useAccount();
+  const [connectWalletButtonText, setConnectWalletButtonText] = React.useState('Connect Wallet');
+
+  React.useEffect(() => {
+    if (isConnected) {
+      setConnectWalletButtonText(address?.slice(0, 6) + '...' + address?.slice(-4));
+    }
+  }, [isConnected, address]);
+
   const [open, setOpen] = React.useState(false);
   const navItems = [
     {
@@ -172,7 +184,7 @@ export default function Sidebar({ children }: { children: ReactNode }) {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
+      <AppBar position="fixed" open={open} sx={{ zIndex: 99 }}>
         <Toolbar>
           <IconButton
             color="inherit"
@@ -186,12 +198,17 @@ export default function Sidebar({ children }: { children: ReactNode }) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component={Link} href="/">
-            Web3 Whisper
-          </Typography>
+          <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
+            <Typography variant="h6" noWrap component={Link} href="/">
+              Web3 Whisper
+            </Typography>
+            <Button variant="contained" color="secondary" onClick={() => openWalletModal()}>
+              {connectWalletButtonText}
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
-      <Drawer variant="permanent" open={open}>
+      <Drawer variant="permanent" open={open} sx={{ zIndex: 98 }}>
         <DrawerHeader>
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
