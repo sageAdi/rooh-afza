@@ -3,7 +3,18 @@
 import Paper from '@mui/material/Paper';
 import PageTitle from '../_components/PageTitle/PageTitle';
 import Box from '@mui/material/Box';
-import { Card, CardContent, Divider, MenuItem, Select, SelectChangeEvent, Stack, TextField } from '@mui/material';
+import {
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  Divider,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Stack,
+  TextField,
+} from '@mui/material';
 import tokens from './data';
 import { useState } from 'react';
 import CustomSelect from '../_components/CustomSelect/CustomSelect';
@@ -18,9 +29,17 @@ const CustomTextField = ({ onChange }: { onChange?: (event: React.ChangeEvent<HT
       type="number"
       onChange={onChange}
       sx={{
-        width: '400px',
+        width: '60%',
         '& .MuiOutlinedInput-root': { borderRadius: '8px' },
-        '& .MuiOutlinedInput-input': { textAlign: 'right', padding: '10px 6px' },
+        '& .MuiOutlinedInput-input': {
+          textAlign: 'right',
+          padding: '10px 12px',
+          '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
+            '-webkit-appearance': 'none',
+            margin: 0,
+          },
+          '-moz-appearance': 'textfield',
+        },
       }}
     />
   );
@@ -35,7 +54,7 @@ const Swap = () => {
   return (
     <Box sx={{ p: 2, m: 1, minHeight: '100%' }}>
       <PageTitle title={'Swap'} />
-      <Card sx={{ maxWidth: 600 }}>
+      <Card sx={{ maxWidth: 550 }}>
         <CardContent>
           <Stack spacing={2}>
             <Box display={'flex'} justifyContent={'space-between'} alignItems="center">
@@ -61,6 +80,11 @@ const Swap = () => {
             </Box>
           </Stack>
         </CardContent>
+        <CardActions>
+          <Button variant="contained" fullWidth>
+            Preview
+          </Button>
+        </CardActions>
       </Card>
     </Box>
   );
