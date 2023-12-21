@@ -5,8 +5,8 @@ import InputFieldDefault from '@/app/_components/InputField/InputField';
 import web3 from '@/app/_library/web3';
 import { FormValues } from '../_types/formValue';
 import Stack from '@mui/material/Stack';
-import Paper from '@mui/material/Paper';
-import { Typography } from '@mui/material';
+import PageTitle from '../_components/PageTitle/PageTitle';
+import Box from '@mui/material/Box';
 
 const initialValues: FormValues = {
   wei: '1000000000000000000',
@@ -36,10 +36,8 @@ const Conversion = () => {
   };
 
   return (
-    <Paper sx={{ p: 2, m: 2 }}>
-      <Typography variant="h5" mb={2}>
-        Conversion
-      </Typography>
+    <Box sx={{ p: 2, m: 2 }}>
+      <PageTitle title={'Conversion'} />
       <Stack spacing={1} maxWidth={'600px'} width={'100%'}>
         <InputFieldDefault name={'wei'} onChange={handleOnChange} label={'Wei'} value={formValue.wei} />
         <InputFieldDefault name={'kwei'} onChange={handleOnChange} label={'KWei'} value={formValue.kwei} />
@@ -53,7 +51,7 @@ const Conversion = () => {
         <InputFieldDefault name={'gether'} onChange={handleOnChange} label={'GEther'} value={formValue.gether} />
         <InputFieldDefault name={'tether'} onChange={handleOnChange} label={'TEther'} value={formValue.tether} />
       </Stack>
-    </Paper>
+    </Box>
   );
 };
 export default Conversion;
