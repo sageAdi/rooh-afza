@@ -1,6 +1,5 @@
 'use client';
 
-import Paper from '@mui/material/Paper';
 import PageTitle from '../_components/PageTitle/PageTitle';
 import Box from '@mui/material/Box';
 import {
@@ -10,16 +9,14 @@ import {
   CardContent,
   Divider,
   MenuItem,
-  Select,
   SelectChangeEvent,
   Stack,
   TextField,
+  listClasses,
 } from '@mui/material';
-import tokens from './data';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CustomSelect from '../_components/CustomSelect/CustomSelect';
-import { getNetwork } from '@wagmi/core';
-import oneInchSwap from '../_scripts/swap';
+import { inTokens, outTokens } from './script';
 
 const CustomTextField = ({ onChange }: { onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void }) => {
   return (
@@ -45,12 +42,35 @@ const CustomTextField = ({ onChange }: { onChange?: (event: React.ChangeEvent<HT
   );
 };
 
-const Swap = () => {
-  const [transferFrom, setTransferFrom] = useState('BTC');
+export default function Swap() {
+  const [inTokensList, setInTokensLIst] = useState([{}]);
+  const [outTokensList, setOutTokensList] = useState([{}]);
+  const [chainId, setChainId] = useState(1);
+
+  useEffect(() => {
+    const getInTokens = async () => {
+      const tokenList = await inTokens(chainId);
+      setInTokensLIst(tokenList);
+    };
+
+    getInTokens();
+  });
 
   const onChangeTransferFrom = (e: SelectChangeEvent) => {
-    setTransferFrom(e.target.value);
+    e.preventDefault();
+
+    const getOutTokens = async () => {
+      const tokenList = await outTokens(chainId, e.target.value, 'walletAddress');
+      setOutTokensList(tokenList);
+    };
+
+    getOutTokens();
   };
+
+  const onChangeFromToken = (e: SelectChangeEvent) => {
+    e.preventDefault();
+  };
+
   return (
     <Box sx={{ p: 2, m: 1, minHeight: '100%' }}>
       <PageTitle title={'Swap'} />
@@ -58,8 +78,8 @@ const Swap = () => {
         <CardContent>
           <Stack spacing={2}>
             <Box display={'flex'} justifyContent={'space-between'} alignItems="center">
-              <CustomSelect value={transferFrom} onChange={onChangeTransferFrom}>
-                {tokens.map((token) => (
+              <CustomSelect value={inTokensList[0]?.symbol} onChange={onChangeFromToken}>
+                {inTokensList.map((token: any) => (
                   <MenuItem key={token.symbol} value={token.symbol}>
                     {token.name}
                   </MenuItem>
@@ -69,8 +89,8 @@ const Swap = () => {
             </Box>
             <Divider />
             <Box display={'flex'} justifyContent={'space-between'} alignItems="center">
-              <CustomSelect value={transferFrom} onChange={onChangeTransferFrom}>
-                {tokens.map((token) => (
+              <CustomSelect value={outTokensList[0]?.symbol} onChange={onChangeTransferFrom}>
+                {outTokensList.map((token: any) => (
                   <MenuItem key={token.symbol} value={token.symbol}>
                     {token.name}
                   </MenuItem>
@@ -88,5 +108,4 @@ const Swap = () => {
       </Card>
     </Box>
   );
-};
-export default Swap;
+}

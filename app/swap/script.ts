@@ -1,5 +1,6 @@
+'use server';
+
 import axios from 'axios';
-import { BrowserProvider } from 'ethers';
 import { oneInch } from '../_utils/config';
 
 const validation = (
@@ -13,9 +14,9 @@ const validation = (
   if (!chainId) {
     throw new Error('chainId is required');
   }
-  if (tokenIn === tokenOut) {
-    throw new Error('tokenIn and tokenOut cannot be the same');
-  }
+  // if (tokenIn === tokenOut && tokenIn !== null && tokenOut !== '') {
+  //   throw new Error('tokenIn and tokenOut cannot be the same');
+  // }
   if (Number(amount) <= 0) {
     throw new Error('amount must be greater than 0');
   }
@@ -32,7 +33,22 @@ const getSigner = async () => {
   return provider.getSigner();
 };
 
-async function quote(chainId: number, src: string, dst: string, amount: string) {
+export async function inTokens(chainId: number) {
+  validation(chainId);
+  const config = {
+    headers: {
+      Authorization: `Bearer ${oneInch.API_KEY}`,
+    },
+  };
+  const response: any = await axios.get(`${oneInch.SWAP_URL}1/tokens`, config);
+  if (response?.data) {
+    const _data = response?.data;
+    return _data.tokens;
+  }
+  return { error: 'Failed to get allowance', message: 'Internal Server Error' };
+}
+
+export async function swap(chainId: number, src: string, dst: string, amount: string) {
   validation(chainId, src, dst, amount);
   const params = {
     src,
@@ -58,7 +74,7 @@ async function quote(chainId: number, src: string, dst: string, amount: string) 
 }
 
 // Completed the transaction using the wallet
-async function swap(data: any) {
+export async function route(data: any) {
   const signer = await getSigner();
   validation(data);
   const params = {
@@ -81,26 +97,10 @@ async function swap(data: any) {
     await txResponse.wait();
     return txResponse.hash;
   }
-  throw new Error('Failed to swap');
+  throw new Error('Failed to route');
 }
 
-async function inTokens(chainId: number) {
-  validation(chainId);
-  const config = {
-    headers: {
-      Authorization: `Bearer ${oneInch.API_KEY}`,
-    },
-  };
-  const response: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/tokens`, config);
-  if (response?.result?.data) {
-    const _data = response?.result?.data;
-    console.log({ _data });
-    return _data.tokens;
-  }
-  throw new Error('Failed to get tokens');
-}
-
-async function outTokens(chainId: number, inTokenAddress: string, walletAddress: string) {
+export async function outTokens(chainId: number, inTokenAddress: string, walletAddress: string) {
   validation(chainId, inTokenAddress, walletAddress);
   const config = {
     headers: {
@@ -121,7 +121,7 @@ async function outTokens(chainId: number, inTokenAddress: string, walletAddress:
 }
 
 // Completed the transaction using the wallet
-async function approve(chainId: number, tokenAddress: string, amount: string) {
+export async function approve(chainId: number, tokenAddress: string, amount: string) {
   validation(chainId, tokenAddress, amount);
   const signer = await getSigner();
   const config = {
@@ -144,7 +144,7 @@ async function approve(chainId: number, tokenAddress: string, amount: string) {
   throw new Error('Failed to approve');
 }
 
-async function delegator(chainId: number) {
+export async function delegator(chainId: number) {
   validation(chainId);
   const config = {
     headers: {
@@ -160,7 +160,7 @@ async function delegator(chainId: number) {
   throw new Error('Failed to get spender');
 }
 
-async function gasPrice(chainId: number) {
+export async function gasPrice(chainId: number) {
   validation(chainId);
   const config = {
     headers: {
@@ -175,15 +175,3 @@ async function gasPrice(chainId: number) {
   }
   throw new Error('Failed to get spender');
 }
-
-const oneInchSwap = {
-  quote,
-  swap,
-  inTokens,
-  outTokens,
-  approve,
-  delegator,
-  gasPrice,
-};
-
-export default oneInchSwap;

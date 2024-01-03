@@ -1,6 +1,6 @@
 export const oneInch = {
-  API_KEY: 'TA39NNwhjFZwhwBmpXjzJAnoHdZztswP',
-  SWAP_URL: 'https://api.1inch.dev/swap/v5.2/ ',
+  API_KEY: 'mwqPpaQY21vdg9Ug2HEp3LI5pKK4bjm7',
+  SWAP_URL: 'https://api.1inch.dev/swap/v5.2/',
   GAS_URL: 'https://api.1inch.dev/gas-price/v1.5/',
 };
 export const chainIds = [
