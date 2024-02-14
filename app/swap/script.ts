@@ -14,9 +14,7 @@ const validation = (
   if (!chainId) {
     throw new Error('chainId is required');
   }
-  // if (tokenIn === tokenOut && tokenIn !== null && tokenOut !== '') {
-  //   throw new Error('tokenIn and tokenOut cannot be the same');
-  // }
+
   if (Number(amount) <= 0) {
     throw new Error('amount must be greater than 0');
   }
@@ -40,15 +38,14 @@ export async function inTokens(chainId: number) {
       Authorization: `Bearer ${oneInch.API_KEY}`,
     },
   };
-  const response: any = await axios.get(`${oneInch.SWAP_URL}1/tokens`, config);
+  const response: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/tokens`, config);
   if (response?.data) {
-    const _data = response?.data;
-    return _data.tokens;
+    return Object.values(response?.data?.tokens).slice(0, 20);
   }
   return { error: 'Failed to get allowance', message: 'Internal Server Error' };
 }
 
-export async function swap(chainId: number, src: string, dst: string, amount: string) {
+export async function quote(chainId: number, src: string, dst: string, amount: string) {
   validation(chainId, src, dst, amount);
   const params = {
     src,
@@ -74,7 +71,7 @@ export async function swap(chainId: number, src: string, dst: string, amount: st
 }
 
 // Completed the transaction using the wallet
-export async function route(data: any) {
+export async function swap(data: any) {
   const signer = await getSigner();
   validation(data);
   const params = {
@@ -91,16 +88,12 @@ export async function route(data: any) {
   };
   const response: any = await axios.get(`${oneInch.SWAP_URL}${data.chainId}/swap`, config);
   if (response?.result?.data) {
-    const _data = response?.result?.data;
-    console.log({ _data });
-    const txResponse = await signer.sendTransaction(_data.allOf[0]);
-    await txResponse.wait();
-    return txResponse.hash;
+    return response?.result?.data.tx.toAll[0];
   }
   throw new Error('Failed to route');
 }
 
-export async function outTokens(chainId: number, inTokenAddress: string, walletAddress: string) {
+export async function allowance(chainId: number, inTokenAddress: string, walletAddress: string) {
   validation(chainId, inTokenAddress, walletAddress);
   const config = {
     headers: {
@@ -113,11 +106,9 @@ export async function outTokens(chainId: number, inTokenAddress: string, walletA
   };
   const response: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/approve/allowance`, config);
   if (response?.result?.data) {
-    const _data = response?.result?.data;
-    console.log({ _data });
-    return _data.allowance;
+    return Object.values(response?.result?.data).slice(0, 20);
   }
-  throw new Error('Failed to get allowance');
+  throw new Error('Didn\'t get allowance');
 }
 
 // Completed the transaction using the wallet

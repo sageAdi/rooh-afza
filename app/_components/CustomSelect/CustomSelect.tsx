@@ -37,6 +37,7 @@ const CustomSelect = ({ children, value, onChange }: CustomSelectInputProps) => 
             mt: 1.5,
             border: '1px solid #ced4da',
             borderRadius: '0.25rem',
+            boxShadow: '0 0 #0000 ,0 0 #0000,0px 4px 6px -1px rgba(0, 0, 0, .05), 0px 2px 4px -1px rgba(0, 0, 0, .05)',
           },
         },
       }}
