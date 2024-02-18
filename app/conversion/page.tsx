@@ -7,6 +7,8 @@ import { FormValues } from '../_types/formValue';
 import Stack from '@mui/material/Stack';
 import PageTitle from '../_components/PageTitle/PageTitle';
 import Box from '@mui/material/Box';
+import axios from 'axios';
+import { oneInch } from '../_utils/config';
 
 const initialValues: FormValues = {
   wei: '1000000000000000000',
@@ -22,7 +24,19 @@ const initialValues: FormValues = {
   tether: '0.000000000001',
 };
 
-const Conversion = () => {
+async function getToken() {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${oneInch.API_KEY}`,
+    },
+  };
+  const response: any = await axios.get(`${oneInch.SWAP_URL}1/tokens`, config);
+  return response;
+}
+
+const Conversion = async () => {
+  const data = await getToken();
+  console.log(data);
   const [formValue, setFormValue] = useState<FormValues>(initialValues);
 
   const handleOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {

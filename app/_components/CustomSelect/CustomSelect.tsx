@@ -3,11 +3,12 @@ import React from 'react';
 
 type CustomSelectInputProps = {
   children: React.ReactNode;
-  value: string;
+  value: any;
   onChange: (event: SelectChangeEvent) => void;
+  width: string;
 };
 
-const CustomSelect = ({ children, value, onChange }: CustomSelectInputProps) => {
+const CustomSelect = ({ children, value, onChange, width }: CustomSelectInputProps) => {
   return (
     <Select
       value={value}
@@ -18,6 +19,7 @@ const CustomSelect = ({ children, value, onChange }: CustomSelectInputProps) => 
         border: 'none',
         boxShadow: '0 0 #0000 ,0 0 #0000,0px 4px 6px -1px rgba(0, 0, 0, .05), 0px 2px 4px -1px rgba(0, 0, 0, .05)',
         height: '2.5rem',
+        width: width,
         px: '8px',
         '.MuiSelect-select': {
           padding: 0,
@@ -37,6 +39,7 @@ const CustomSelect = ({ children, value, onChange }: CustomSelectInputProps) => 
             mt: 1.5,
             border: '1px solid #ced4da',
             borderRadius: '0.25rem',
+            boxShadow: '0 0 #0000 ,0 0 #0000,0px 4px 6px -1px rgba(0, 0, 0, .05), 0px 2px 4px -1px rgba(0, 0, 0, .05)',
           },
         },
       }}

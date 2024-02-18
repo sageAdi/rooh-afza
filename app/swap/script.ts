@@ -1,6 +1,9 @@
+'use server';
+
 import axios from 'axios';
-import { BrowserProvider } from 'ethers';
 import { oneInch } from '../_utils/config';
+
+const ZERO_ADDRESS:string = '0x0000000000000000000000000000000000000000';
 
 const validation = (
   chainId: number,
@@ -13,26 +16,45 @@ const validation = (
   if (!chainId) {
     throw new Error('chainId is required');
   }
-  if (tokenIn === tokenOut) {
-    throw new Error('tokenIn and tokenOut cannot be the same');
+  if (tokenIn) {
+    if (tokenIn === ZERO_ADDRESS) {
+      throw new Error('tokenIn cannot be zero address');
+    }
+  }
+  if (tokenIn && tokenOut) {
+    if (tokenIn === tokenOut && tokenOut === ZERO_ADDRESS) {
+      throw new Error('tokenIn and tokenOut cannot be the same');
+    }
   }
   if (Number(amount) <= 0) {
     throw new Error('amount must be greater than 0');
   }
   if (from) {
-    throw new Error('no sender address sended');
+    throw new Error('no sender address sent');
   }
   if (slippage) {
     if (slippage > -1 && slippage < 51) throw new Error('slippage must be between 0 and 50');
   }
 };
 
-const getSigner = async () => {
-  const provider: any = 'new BrowserProvider()';
-  return provider.getSigner();
-};
 
-async function quote(chainId: number, src: string, dst: string, amount: string) {
+export async function inTokens(chainId: number): Promise<any> {
+  validation(chainId);
+  const config = {
+    headers: {
+      Authorization: `Bearer ${oneInch.API_KEY}`,
+    },
+  };
+
+  try {
+    const { data }: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/tokens`, config);
+    return Object.values(data.tokens).slice(0, 20);
+  } catch (e) {
+    return { error: 'Failed to get allowance', message: 'Internal Server Error' };
+  }
+}
+
+export async function quote(chainId: number, src: string, dst: string, amount: string) {
   validation(chainId, src, dst, amount);
   const params = {
     src,
@@ -48,18 +70,16 @@ async function quote(chainId: number, src: string, dst: string, amount: string) 
     },
     params,
   };
-  const response: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/quote`, config);
-  if (response?.result?.data) {
-    const _data = response?.result?.data;
-    console.log({ _data });
-    return _data.toAmount;
+  try {
+    const { data }: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/quote`, config);
+    return data.toAmount;
+  } catch (e) {
+    console.log(e);
   }
-  throw new Error('Failed to get quote');
 }
 
 // Completed the transaction using the wallet
-async function swap(data: any) {
-  const signer = await getSigner();
+export async function swap(data: any) {
   validation(data);
   const params = {
     ...data,
@@ -75,32 +95,12 @@ async function swap(data: any) {
   };
   const response: any = await axios.get(`${oneInch.SWAP_URL}${data.chainId}/swap`, config);
   if (response?.result?.data) {
-    const _data = response?.result?.data;
-    console.log({ _data });
-    const txResponse = await signer.sendTransaction(_data.allOf[0]);
-    await txResponse.wait();
-    return txResponse.hash;
+    return response?.result?.data?.tx?.toAll[0];
   }
-  throw new Error('Failed to swap');
+  throw new Error('Failed In Swapping');
 }
 
-async function inTokens(chainId: number) {
-  validation(chainId);
-  const config = {
-    headers: {
-      Authorization: `Bearer ${oneInch.API_KEY}`,
-    },
-  };
-  const response: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/tokens`, config);
-  if (response?.result?.data) {
-    const _data = response?.result?.data;
-    console.log({ _data });
-    return _data.tokens;
-  }
-  throw new Error('Failed to get tokens');
-}
-
-async function outTokens(chainId: number, inTokenAddress: string, walletAddress: string) {
+export async function allowance(chainId: number, inTokenAddress: string, walletAddress: string) {
   validation(chainId, inTokenAddress, walletAddress);
   const config = {
     headers: {
@@ -113,17 +113,14 @@ async function outTokens(chainId: number, inTokenAddress: string, walletAddress:
   };
   const response: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/approve/allowance`, config);
   if (response?.result?.data) {
-    const _data = response?.result?.data;
-    console.log({ _data });
-    return _data.allowance;
+    return Object.values(response?.result?.data).slice(0, 20);
   }
-  throw new Error('Failed to get allowance');
+  throw new Error("Didn't get allowance");
 }
 
 // Completed the transaction using the wallet
-async function approve(chainId: number, tokenAddress: string, amount: string) {
+export async function approve(chainId: number, tokenAddress: string, amount: string) {
   validation(chainId, tokenAddress, amount);
-  const signer = await getSigner();
   const config = {
     headers: {
       Authorization: `Bearer ${oneInch.API_KEY}`,
@@ -136,15 +133,13 @@ async function approve(chainId: number, tokenAddress: string, amount: string) {
   const response: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/approve/transaction`, config);
   if (response?.result?.data) {
     const _data = response?.result?.data;
-    console.log({ _data });
-    const txResponse = await signer.sendTransaction(_data);
-    await txResponse.wait();
-    return txResponse.hash;
+    console.log(_data);
+    return _data;
   }
   throw new Error('Failed to approve');
 }
 
-async function delegator(chainId: number) {
+export async function delegatorAddress(chainId: number) {
   validation(chainId);
   const config = {
     headers: {
@@ -160,7 +155,7 @@ async function delegator(chainId: number) {
   throw new Error('Failed to get spender');
 }
 
-async function gasPrice(chainId: number) {
+export async function gasPrice(chainId: number) {
   validation(chainId);
   const config = {
     headers: {
@@ -176,14 +171,23 @@ async function gasPrice(chainId: number) {
   throw new Error('Failed to get spender');
 }
 
-const oneInchSwap = {
-  quote,
-  swap,
-  inTokens,
-  outTokens,
-  approve,
-  delegator,
-  gasPrice,
-};
 
-export default oneInchSwap;
+export async function transactionHistory(chainId: number, walletAddress: string, limit?: number) {
+  validation(chainId, walletAddress);
+  const config = {
+    headers: {
+      Authorization: `Bearer ${oneInch.API_KEY}`,
+    },
+    params: {
+      chainId,
+      limit: limit || 10,
+    },
+  };
+  const response: any = await axios.get(`https://api.1inch.dev/history/v2.0/history/${walletAddress}/events`, config);
+  if (response?.result?.data) {
+    const _data = response?.result?.data;
+    console.log({ _data });
+    return _data;
+  }
+  throw new Error('Failed to get transaction history');
+}
