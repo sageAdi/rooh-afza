@@ -2,7 +2,11 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Sidebar from './Sidebar';
-import { Web3Modal } from '../context/Web3Modal';
+import { headers } from 'next/headers';
+import { cookieToInitialState } from 'wagmi';
+import { config } from '@/config/wagmiConfig';
+import { WagmiContextProvider } from '@/context/WagmiContextProvider';
+import ReactQueryProvider from '@/provider/ReactQueryProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -12,12 +16,15 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const initialState = cookieToInitialState(config, headers().get('cookie'));
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Web3Modal>
-          <Sidebar>{children}</Sidebar>
-        </Web3Modal>
+        <ReactQueryProvider>
+          <WagmiContextProvider initialState={initialState}>
+            <Sidebar>{children}</Sidebar>
+          </WagmiContextProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

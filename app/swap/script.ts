@@ -38,18 +38,20 @@ const validation = (
 };
 
 
-export async function inTokens(chainId: number) {
+export async function inTokens(chainId: number): Promise<any> {
   validation(chainId);
   const config = {
     headers: {
       Authorization: `Bearer ${oneInch.API_KEY}`,
     },
   };
-  const response: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/tokens`, config);
-  if (response?.data) {
-    return Object.values(response?.data?.tokens).slice(0, 20);
+
+  try {
+    const { data }: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/tokens`, config);
+    return Object.values(data.tokens).slice(0, 20);
+  } catch (e) {
+    return { error: 'Failed to get allowance', message: 'Internal Server Error' };
   }
-  return { error: 'Failed to get allowance', message: 'Internal Server Error' };
 }
 
 export async function quote(chainId: number, src: string, dst: string, amount: string) {
@@ -68,13 +70,12 @@ export async function quote(chainId: number, src: string, dst: string, amount: s
     },
     params,
   };
-  const response: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/quote`, config);
-  if (response?.result?.data) {
-    const _data = response?.result?.data;
-    console.log({ _data });
-    return _data?.toAmount;
+  try {
+    const { data }: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/quote`, config);
+    return data.toAmount;
+  } catch (e) {
+    console.log(e);
   }
-  throw new Error('Failed to get quote');
 }
 
 // Completed the transaction using the wallet
@@ -114,7 +115,7 @@ export async function allowance(chainId: number, inTokenAddress: string, walletA
   if (response?.result?.data) {
     return Object.values(response?.result?.data).slice(0, 20);
   }
-  throw new Error('Didn\'t get allowance');
+  throw new Error("Didn't get allowance");
 }
 
 // Completed the transaction using the wallet
