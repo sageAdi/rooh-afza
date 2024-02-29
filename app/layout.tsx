@@ -5,7 +5,7 @@ import Sidebar from './Sidebar';
 import { headers } from 'next/headers';
 import { cookieToInitialState } from 'wagmi';
 import { config } from '@/config/wagmiConfig';
-import { WagmiContextProvider } from '@/context/WagmiContextProvider';
+import { WagmiContextProvider } from '@/provider/WagmiContextProvider';
 import ReactQueryProvider from '@/provider/ReactQueryProvider';
 
 const inter = Inter({ subsets: ['latin'] });
