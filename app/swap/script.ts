@@ -3,7 +3,7 @@
 import axios from 'axios';
 import { oneInch } from '../_utils/config';
 
-const ZERO_ADDRESS:string = '0x0000000000000000000000000000000000000000';
+const ZERO_ADDRESS: string = '0x0000000000000000000000000000000000000000';
 
 const validation = (
   chainId: number,
@@ -37,7 +37,6 @@ const validation = (
   }
 };
 
-
 export async function inTokens(chainId: number): Promise<any> {
   validation(chainId);
   const config = {
@@ -50,6 +49,7 @@ export async function inTokens(chainId: number): Promise<any> {
     const { data }: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/tokens`, config);
     return Object.values(data.tokens).slice(0, 20);
   } catch (e) {
+    console.log('error ' + e);
     return { error: 'Failed to get allowance', message: 'Internal Server Error' };
   }
 }
@@ -72,11 +72,14 @@ export async function quote(chainId: number, src: string, dst: string, amount: s
   };
   try {
     const { data }: any = await axios.get(`${oneInch.SWAP_URL}${chainId}/quote`, config);
-    return data.toAmount;
-  } catch (e) {
+    return data;
+  } catch (e: any) {
     console.log(e);
+    return e.message;
   }
 }
+
+export async function quoteNew(chainId: number, src: string, dst: string, amount: string) {}
 
 // Completed the transaction using the wallet
 export async function swap(data: any) {
@@ -170,7 +173,6 @@ export async function gasPrice(chainId: number) {
   }
   throw new Error('Failed to get spender');
 }
-
 
 export async function transactionHistory(chainId: number, walletAddress: string, limit?: number) {
   validation(chainId, walletAddress);

@@ -2,9 +2,10 @@
 // Path: next.config.js
 const nextConfig = {
   webpack: (config) => {
+    if (config.name === 'server') config.optimization.concatenateModules = false;
     config.externals.push('pino-pretty', 'lokijs', 'encoding');
     return config;
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

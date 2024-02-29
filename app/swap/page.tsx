@@ -14,12 +14,12 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import CustomSelect from '../_components/CustomSelect/CustomSelect';
 import { inTokens, quote, swap } from './script';
 import { useAccount } from 'wagmi';
 import { chain } from '@/store';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 const CustomTextField = ({
   value,
@@ -57,29 +57,40 @@ export default function Swap() {
   const [outAmount, setOutAmount] = useState('');
   const [slippage, setSlippage] = useState(0);
   const { address } = useAccount();
-  const [inToken, setInToken] = useState<string>('');
-  const [outToken, setOutToken] = useState<string>('');
-
-  const queryClient = useQueryClient();
+  const [inToken, setInToken] = useState<any>('');
+  const [outToken, setOutToken] = useState<any>('');
 
   const { data: inTokensList, isLoading } = useQuery({
-    queryKey: ['tokens', chain.value],
+    queryKey: ['tokens'],
     queryFn: () => inTokens(chain.value),
+    refetchOnWindowFocus: false,
+    retry: false,
+    enabled: !!chain.value,
   });
 
-  const { data } = useQuery({
-    queryKey: ['quote', chain.value, inToken, outToken, inAmount],
-    queryFn: () => quote(chain.value, inToken, outToken, inAmount),
-    enabled: !!(inToken.length > 0 && outToken.length > 0 && inAmount.length > 0),
+  const { data: qouteAmount } = useQuery({
+    queryKey: ['quote', chain.value, inToken?.address, outToken?.address, inAmount],
+    queryFn: () =>
+      quote(
+        chain.value,
+        inToken?.address,
+        outToken?.address,
+        BigInt(Math.pow(10, inToken?.decimals) * parseFloat(inAmount)).toString(),
+      ),
+    enabled: !!inAmount,
     retry: false,
+    refetchOnWindowFocus: false,
   });
   useEffect(() => {
-    setOutAmount(data);
-  }, [data]);
+    if (qouteAmount?.toAmount) {
+      const amount = parseFloat(qouteAmount?.toAmount) / Math.pow(10, outToken?.decimals);
+      setOutAmount(amount.toString());
+    }
+  }, [outToken?.decimals, qouteAmount?.toAmount]);
   useEffect(() => {
     if (inTokensList) {
-      setInToken(inTokensList[0].address);
-      setOutToken(inTokensList[1].address);
+      setInToken(inTokensList[0]);
+      setOutToken(inTokensList[1]);
     }
   }, [inTokensList]);
 
@@ -94,11 +105,9 @@ export default function Swap() {
     setOutToken(e.target.value);
   };
 
-  const onChangeInAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeInAmount = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setInAmount(e.target.value);
-    if (inToken.length > 0 && outToken.length > 0 && inAmount.length > 0)
-      queryClient.invalidateQueries({ queryKey: ['quote', chain.value, inToken, outToken, inAmount] });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLButtonElement>) => {
@@ -107,8 +116,10 @@ export default function Swap() {
   };
 
   if (isLoading) return 'Loading';
+  console.log(inTokensList);
 
   return (
+    // <HydrationBoundary state={dehydrate(queryClient)}>
     <Box sx={{ p: 2, m: 2 }}>
       <PageTitle title={'Swap'} />
       <Card sx={{ maxWidth: 'sm', width: '100%' }}>
@@ -117,7 +128,7 @@ export default function Swap() {
             <Box display={'flex'} justifyContent={'space-between'} alignItems="center">
               <CustomSelect value={inToken} onChange={onChangeFromToken} width="150px">
                 {inTokensList?.map((token: any) => (
-                  <MenuItem key={token.symbol} value={token.address}>
+                  <MenuItem key={token.symbol} value={token}>
                     <Box display={'flex'} alignItems={'center'} gap={0.5}>
                       <Avatar sx={{ width: 30, height: 30 }} src={token.logoURI}>
                         Avatar
@@ -133,7 +144,7 @@ export default function Swap() {
             <Box display={'flex'} justifyContent={'space-between'} alignItems="center">
               <CustomSelect value={outToken} onChange={onChangeToToken} width="150px">
                 {inTokensList?.map((token: any) => (
-                  <MenuItem key={token.symbol} value={token.address}>
+                  <MenuItem key={token.symbol} value={token}>
                     <Box display={'flex'} alignItems={'center'} gap={0.5}>
                       <Avatar sx={{ width: 30, height: 30 }} src={token.logoURI}>
                         Avatar
@@ -154,5 +165,6 @@ export default function Swap() {
         </CardActions>
       </Card>
     </Box>
+    // </HydrationBoundary>
   );
 }

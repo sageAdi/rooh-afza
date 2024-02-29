@@ -19,7 +19,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Link from 'next/link';
-import { Button, ListItemText, MenuItem } from '@mui/material';
+import { Button, ListItemText, MenuItem, SelectChangeEvent } from '@mui/material';
 import ArchitectureIcon from '@mui/icons-material/Architecture';
 import TokenIcon from '@mui/icons-material/Token';
 import ExploreIcon from '@mui/icons-material/Explore';
@@ -30,9 +30,9 @@ import Tooltip from '@mui/material/Tooltip';
 import { usePathname } from 'next/navigation';
 import { useWeb3Modal } from '@web3modal/wagmi/react';
 import { useAccount } from 'wagmi';
-import { mainnet, aurora, arbitrum, polygon } from '@wagmi/core/chains';
+import { arbitrum, aurora, mainnet, polygon } from '@wagmi/core/chains';
 import CustomSelect from './_components/CustomSelect/CustomSelect';
-import { chain, useChainId } from '@/store';
+import { chain } from '@/store';
 import { useQueryClient } from '@tanstack/react-query';
 
 const drawerWidth = 240;
@@ -189,6 +189,11 @@ export default function Sidebar({ children }: { children: ReactNode }) {
 
   const queryClient = useQueryClient();
 
+  const onChangeChain = async (e: SelectChangeEvent) => {
+    chain.value = parseInt(e.target.value);
+    await queryClient.invalidateQueries({ queryKey: ['tokens'] });
+  };
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -214,14 +219,7 @@ export default function Sidebar({ children }: { children: ReactNode }) {
               <Button variant="contained" color="secondary" onClick={() => openWalletModal()}>
                 {connectWalletButtonText}
               </Button>
-              <CustomSelect
-                value={chain}
-                onChange={(e) => {
-                  chain.value = parseInt(e.target.value);
-                  queryClient.invalidateQueries({ queryKey: ['tokens', e.target.value] });
-                }}
-                width={'150px'}
-              >
+              <CustomSelect value={chain} onChange={(e) => onChangeChain(e)} width={'150px'}>
                 {chains.map((chain) => (
                   <MenuItem key={chain.id} value={chain.id}>
                     {chain.name}
